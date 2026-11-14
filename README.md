@@ -12,7 +12,7 @@ The service demonstrates how to implement a reliable wallet-to-wallet money tran
 * Transaction state management
 * PostgreSQL constraints and indexes
 * Behavioral integration testing with Testcontainers
-
+* DynamoDB and Redis integration for read scaling and caching
 ---
 
 ## 1. What This Service Does

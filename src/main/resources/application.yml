@@ -1,0 +1,84 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/walletdb}
+    username: ${DB_USERNAME:wallet}
+    password: ${DB_PASSWORD:wallet}
+    hikari:
+      maximum-pool-size: 10
+
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migrations
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:wallet-read-model}
+      enable-auto-commit: true
+
+    listener:
+      ack-mode: record
+      auto-startup: ${KAFKA_LISTENER_AUTO_STARTUP:true}
+
+    admin:
+      auto-create: ${KAFKA_ADMIN_AUTO_CREATE:true}
+
+    producer:
+      batch-size: 16384
+      properties:
+        linger.ms: 5
+        max.in.flight.requests.per.connection: 5
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 500ms
+
+server:
+  port: ${SERVER_PORT:8080}
+  tomcat:
+    threads:
+      max: 200
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+wallet:
+  kafka:
+    enabled: ${WALLET_KAFKA_ENABLED:true}
+    partitions: ${KAFKA_PARTITIONS:3}
+    replicas: ${KAFKA_REPLICAS:1}
+    #dlt:
+    #  enabled: ${KAFKA_DLT_ENABLED:true}
+
+  redis:
+    enabled: ${WALLET_REDIS_ENABLED:true}
+
+  dynamodb:
+    region: ${AWS_REGION:eu-west-2}
+    endpoint: ${DYNAMODB_ENDPOINT:http://localhost:8000}
+    table-name: ${DYNAMODB_TABLE:wallet-transfer-read-model}
+    auto-create-table: ${DYNAMODB_AUTO_CREATE:true}
+
+  outbox:
+    poll-ms: ${OUTBOX_POLL_MS:1000}

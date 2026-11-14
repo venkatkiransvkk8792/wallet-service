@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallet-service
+  namespace: wallet
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: wallet-service
+  template:
+    metadata:
+      labels:
+        app: wallet-service
+    spec:
+      serviceAccountName: wallet-service
+      containers:
+        - name: wallet-service
+          image: YOUR_ECR_REPOSITORY/wallet-service:0.1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-service
+                  key: DB_URL
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-service
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallet-service
+                  key: DB_PASSWORD
+            - name: AWS_REGION
+              value: "eu-west-2"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+            - name: WALLET_KAFKA_ENABLED
+              value: "true"
+            - name: KAFKA_LISTENER_AUTO_STARTUP
+              value: "true"
+            - name: KAFKA_ADMIN_AUTO_CREATE
+              value: "true"
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: WALLET_REDIS_ENABLED
+              value: "true"
+            - name: DYNAMODB_TABLE
+              value: "wallet-transfer-read-model"
+            - name: DYNAMODB_AUTO_CREATE
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 200m
+              memory: 384Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wallet-service
+  namespace: wallet
+spec:
+  type: LoadBalancer
+  selector:
+    app: wallet-service
+  ports:
+    - port: 80
+      targetPort: 8080

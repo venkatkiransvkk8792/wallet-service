@@ -1,0 +1,12 @@
+{
+  "TableName": "wallet-transfer-read-model",
+  "BillingMode": "PAY_PER_REQUEST",
+  "AttributeDefinitions": [
+    { "AttributeName": "walletId", "AttributeType": "S" },
+    { "AttributeName": "sortKey", "AttributeType": "S" }
+  ],
+  "KeySchema": [
+    { "AttributeName": "walletId", "KeyType": "HASH" },
+    { "AttributeName": "sortKey", "KeyType": "RANGE" }
+  ]
+}
